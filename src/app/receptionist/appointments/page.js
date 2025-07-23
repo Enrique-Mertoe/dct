@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { authService } from '@/services/apiService';
 import RoleBasedLayout from '@/components/layout/RoleBasedLayout';
@@ -35,7 +35,7 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import EventAvailableIcon from '@mui/icons-material/EventAvailable';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 
-export default function AppointmentsPage() {
+function AppointmentsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const statusFilter = searchParams.get('status');
@@ -342,5 +342,17 @@ export default function AppointmentsPage() {
     <RoleBasedLayout allowedRoles={['RECEPTIONIST', 'ADMIN']}>
       {appointmentsContent}
     </RoleBasedLayout>
+  );
+}
+
+export default function AppointmentsPage() {
+  return (
+    <Suspense fallback={
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <CircularProgress />
+      </Box>
+    }>
+      <AppointmentsContent />
+    </Suspense>
   );
 }
