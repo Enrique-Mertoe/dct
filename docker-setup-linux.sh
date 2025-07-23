@@ -315,14 +315,8 @@ echo "Clinic Management System stopped"
 EOF
     
     # Create update script
-    cat > "$DATA_ROOT/update-clinic.sh" << EOF
-#!/bin/bash
-cd "$APP_DIR"
-echo "Updating Clinic Management System..."
-git pull origin main
-docker-compose up -d --build
-echo "Update complete!"
-EOF
+    # Copy the smart update script
+    cp docker/backup-before-rebuild.sh "$DATA_ROOT/smart-update.sh" 2>/dev/null || echo "Smart update script will be available after first build"
     
     # Make scripts executable
     chmod +x "$DATA_ROOT"/*.sh
@@ -376,7 +370,7 @@ display_summary() {
     echo -e "${YELLOW}Management:${NC}"
     echo "  - Start:  $DATA_ROOT/start-clinic.sh"
     echo "  - Stop:   $DATA_ROOT/stop-clinic.sh"
-    echo "  - Update: $DATA_ROOT/update-clinic.sh"
+    echo "  - Smart Update: $DATA_ROOT/smart-update.sh (preserves data)"
     echo "  - Logs:   docker-compose logs -f"
     echo
     echo -e "${YELLOW}Data Location:${NC} $DATA_ROOT"

@@ -330,15 +330,8 @@ echo echo [OK] Clinic system stopped
 echo pause
 ) > "%DATA_ROOT%\STOP-CLINIC.bat"
 
-(
-echo @echo off
-echo echo Updating Clinic Management System
-echo cd /d "%APP_DIR%"
-echo git pull origin main
-echo docker-compose up -d --build
-echo echo [OK] Update complete!
-echo pause
-) > "%DATA_ROOT%\UPDATE-CLINIC.bat"
+REM Copy the smart update script
+copy "SMART-UPDATE.bat" "%DATA_ROOT%\SMART-UPDATE.bat" >nul 2>&1
 
 REM Create desktop shortcut using built-in Windows method
 echo [InternetShortcut]> "%USERPROFILE%\Desktop\Clinic Management System.url"
@@ -367,7 +360,7 @@ echo.
 echo MANAGE YOUR SYSTEM:
 echo    • Start clinic:  Double-click %DATA_ROOT%\START-CLINIC.bat
 echo    • Stop clinic:   Double-click %DATA_ROOT%\STOP-CLINIC.bat
-echo    • Update app:    Double-click %DATA_ROOT%\UPDATE-CLINIC.bat
+echo    • Smart Update:  Double-click %DATA_ROOT%\SMART-UPDATE.bat (preserves data)
 echo.
 echo YOUR DATA IS SAFE:
 echo    • All patient data: %DATA_ROOT%
