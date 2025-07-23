@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { authService } from '@/services/apiService';
 import {
@@ -37,7 +37,7 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 
 export default function PatientDetailPage({ params }) {
   const router = useRouter();
-  const patientId = params.id;
+  const patientId = use(params).id;
   const [user, setUser] = useState(null);
   const [patient, setPatient] = useState(null);
   const [loading, setLoading] = useState(true);

@@ -48,37 +48,52 @@ export default function PhysiotherapistDashboard() {
         // Redirect if not physiotherapist
         if (userData.role !== 'PHYSIOTHERAPIST') {
           router.push(`/${userData.role.toLowerCase()}`);
+          return;
         }
       } catch (error) {
         console.error('Error fetching user data:', error);
         router.push('/login');
+        return;
       }
     };
 
     const fetchDashboardData = async () => {
       try {
-        // In a real app, you would fetch these stats from your API
-        // For now, we'll use mock data
+        // Get today's date in ISO format (YYYY-MM-DD)
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const todayStr = today.toISOString().split('T')[0];
+        
+        // Fetch today's appointments
+        const appointmentsResponse = await fetch(`/api/appointments?date=${todayStr}&doctorId=${user.id}`);
+        if (!appointmentsResponse.ok) throw new Error('Failed to fetch appointments');
+        const appointmentsData = await appointmentsResponse.json();
+        setTodayAppointments(appointmentsData);
+        
+        // Fetch assigned patients count
+        const patientsResponse = await fetch(`/api/patients?assignedToMe=true`);
+        if (!patientsResponse.ok) throw new Error('Failed to fetch patients');
+        const patientsData = await patientsResponse.json();
+        
+        // Fetch completed treatments count
+        const treatmentsResponse = await fetch(`/api/treatments?physiotherapistId=${user.id}`);
+        if (!treatmentsResponse.ok) throw new Error('Failed to fetch treatments');
+        const treatmentsData = await treatmentsResponse.json();
+        
+        // Get recent patients with last visit
+        const recentPatientsWithVisits = patientsData
+          .filter(patient => patient.lastVisit)
+          .sort((a, b) => new Date(b.lastVisit) - new Date(a.lastVisit))
+          .slice(0, 3);
+        
+        setRecentPatients(recentPatientsWithVisits);
+        
+        // Set stats
         setStats({
-          todayAppointments: 4,
-          assignedPatients: 28,
-          completedTreatments: 156,
+          todayAppointments: appointmentsData.length,
+          assignedPatients: patientsData.length,
+          completedTreatments: treatmentsData.filter(t => t.appointment?.status === 'COMPLETED').length,
         });
-        
-        // Mock today's appointments
-        setTodayAppointments([
-          { id: '1', time: '09:00 - 10:30', patientName: 'John Smith', status: 'CONFIRMED', notes: 'Follow-up session' },
-          { id: '2', time: '10:30 - 12:00', patientName: 'Sarah Williams', status: 'CONFIRMED', notes: 'Initial assessment' },
-          { id: '3', time: '14:00 - 15:30', patientName: 'Michael Brown', status: 'CONFIRMED', notes: 'Knee rehabilitation' },
-          { id: '4', time: '15:30 - 17:00', patientName: 'Emily Davis', status: 'CONFIRMED', notes: 'Back pain treatment' },
-        ]);
-        
-        // Mock recent patients
-        setRecentPatients([
-          { id: '1', name: 'John Smith', lastVisit: '2023-07-20', condition: 'Shoulder injury' },
-          { id: '2', name: 'Sarah Williams', lastVisit: '2023-07-18', condition: 'Lower back pain' },
-          { id: '3', name: 'Michael Brown', lastVisit: '2023-07-15', condition: 'Knee rehabilitation' },
-        ]);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
       } finally {
@@ -87,8 +102,10 @@ export default function PhysiotherapistDashboard() {
     };
 
     fetchUserData();
-    fetchDashboardData();
-  }, [router]);
+    if (user) {
+      fetchDashboardData();
+    }
+  }, [router, user]);
 
   const menuItems = [
     {
@@ -130,7 +147,7 @@ export default function PhysiotherapistDashboard() {
       <Box sx={{ flexGrow: 1 }}>
         <Grid container spacing={3}>
           {/* Welcome Card */}
-          <Grid size={{ xs: 12 }}>
+          <Grid item size={12}>
             <Paper sx={{ p: 3, display: 'flex', alignItems: 'center' }}>
               <LocalHospitalIcon sx={{ fontSize: 40, color: 'primary.main', mr: 2 }} />
               <Box>
@@ -145,7 +162,9 @@ export default function PhysiotherapistDashboard() {
           </Grid>
 
           {/* Stats Cards */}
-          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+          <Grid item size={{
+            xs:12,md:4
+          }} >
             <Card>
               <CardContent>
                 <Typography variant="h6" color="text.secondary" gutterBottom>
@@ -160,7 +179,9 @@ export default function PhysiotherapistDashboard() {
               </CardContent>
             </Card>
           </Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+          <Grid item size={{
+                    xs:12,md:4,sm:6
+                  }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" color="text.secondary" gutterBottom>
@@ -175,7 +196,9 @@ export default function PhysiotherapistDashboard() {
               </CardContent>
             </Card>
           </Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+          <Grid item size={{
+                    xs:12,md:4,sm:6
+                  }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" color="text.secondary" gutterBottom>
@@ -192,7 +215,9 @@ export default function PhysiotherapistDashboard() {
           </Grid>
 
           {/* Today's Appointments */}
-          <Grid size={{ xs: 12, md: 6 }}>
+          <Grid item  size={{
+            xs:12,md:6
+          }}>
             <Card>
               <CardHeader title="Today's Appointments" />
               <CardContent>
@@ -210,13 +235,18 @@ export default function PhysiotherapistDashboard() {
                             secondary={
                               <>
                                 <Typography component="span" variant="body2" color="text.primary">
-                                  {appointment.notes}
+                                  {appointment.notes || 'No notes'}
                                 </Typography>
                                 {" — "}
                                 <Chip
                                   label={appointment.status}
                                   size="small"
-                                  color={appointment.status === 'CONFIRMED' ? 'success' : 'warning'}
+                                  color={
+                                    appointment.status === 'CONFIRMED' ? 'success' : 
+                                    appointment.status === 'SCHEDULED' ? 'primary' : 
+                                    appointment.status === 'COMPLETED' ? 'info' : 
+                                    'default'
+                                  }
                                 />
                               </>
                             }
@@ -241,7 +271,9 @@ export default function PhysiotherapistDashboard() {
           </Grid>
 
           {/* Recent Patients */}
-          <Grid size={{ xs: 12, md: 6 }}>
+          <Grid item size={{
+            xs:12,md:6
+          }}>
             <Card>
               <CardHeader title="Recent Patients" />
               <CardContent>
@@ -259,11 +291,11 @@ export default function PhysiotherapistDashboard() {
                             secondary={
                               <>
                                 <Typography component="span" variant="body2" color="text.primary">
-                                  {patient.condition}
+                                  {patient.condition || 'No condition specified'}
                                 </Typography>
                                 {" — Last visit: "}
                                 <Typography component="span" variant="body2">
-                                  {new Date(patient.lastVisit).toLocaleDateString()}
+                                  {patient.lastVisit ? new Date(patient.lastVisit).toLocaleDateString() : 'Never'}
                                 </Typography>
                               </>
                             }
@@ -288,12 +320,14 @@ export default function PhysiotherapistDashboard() {
           </Grid>
 
           {/* Quick Actions */}
-          <Grid size={{ xs: 12 }}>
+          <Grid item size={12}>
             <Card>
               <CardHeader title="Quick Actions" />
               <CardContent>
                 <Grid container spacing={2}>
-                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                  <Grid item  size={{
+                    xs:12,md:3,sm:6
+                  }}>
                     <Button 
                       variant="contained" 
                       fullWidth 
@@ -302,7 +336,9 @@ export default function PhysiotherapistDashboard() {
                       View My Patients
                     </Button>
                   </Grid>
-                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                  <Grid item size={{
+                    xs:12,md:3,sm:6
+                  }}>
                     <Button 
                       variant="contained" 
                       fullWidth 
@@ -311,7 +347,9 @@ export default function PhysiotherapistDashboard() {
                       View Schedule
                     </Button>
                   </Grid>
-                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                  <Grid item size={{
+                    xs:12,md:3,sm:6
+                  }}>
                     <Button 
                       variant="outlined" 
                       fullWidth 
@@ -320,7 +358,9 @@ export default function PhysiotherapistDashboard() {
                       Record Treatment
                     </Button>
                   </Grid>
-                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                  <Grid item size={{
+                    xs:12,md:3,sm:6
+                  }}>
                     <Button 
                       variant="outlined" 
                       fullWidth 

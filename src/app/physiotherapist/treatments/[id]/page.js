@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { authService } from '@/services/apiService';
 import {
@@ -26,7 +26,7 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 
 export default function TreatmentDetailPage({ params }) {
   const router = useRouter();
-  const treatmentId = params.id;
+  const treatmentId = use(params).id;
   const [user, setUser] = useState(null);
   const [treatment, setTreatment] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -163,7 +163,7 @@ export default function TreatmentDetailPage({ params }) {
           }}
         >
           <Grid container spacing={2} alignItems="center">
-            <Grid item xs={12} md={8}>
+            <Grid size={{ xs: 12, md: 8 }}>
               <Typography variant="h4" fontWeight="bold">
                 Treatment for {patientName}
               </Typography>
@@ -171,7 +171,7 @@ export default function TreatmentDetailPage({ params }) {
                 {treatmentDate}
               </Typography>
             </Grid>
-            <Grid item xs={12} md={4} sx={{ textAlign: { xs: 'left', md: 'right' } }}>
+            <Grid size={{ xs: 12, md: 4 }} sx={{ textAlign: { xs: 'left', md: 'right' } }}>
               <Button 
                 variant="contained" 
                 color="secondary"
@@ -190,7 +190,7 @@ export default function TreatmentDetailPage({ params }) {
 
         <Grid container spacing={3}>
           {/* Treatment Notes */}
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Card elevation={2}>
               <CardHeader 
                 title="Treatment Notes" 
@@ -209,7 +209,7 @@ export default function TreatmentDetailPage({ params }) {
           </Grid>
 
           {/* Home Program */}
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card elevation={2} sx={{ height: '100%' }}>
               <CardHeader 
                 title="Home Program" 
@@ -234,7 +234,7 @@ export default function TreatmentDetailPage({ params }) {
           </Grid>
 
           {/* Progress Notes */}
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card elevation={2} sx={{ height: '100%' }}>
               <CardHeader 
                 title="Progress Notes" 
@@ -260,7 +260,7 @@ export default function TreatmentDetailPage({ params }) {
 
           {/* Appointment Information */}
           {treatment.appointment && (
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <Card elevation={2}>
                 <CardHeader 
                   title="Appointment Information" 

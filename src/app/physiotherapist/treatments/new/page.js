@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { authService } from '@/services/apiService';
 import {
@@ -297,7 +297,7 @@ export default function NewTreatmentPage() {
           />
           <CardContent>
             <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <FormControl fullWidth margin="normal" required>
                   <InputLabel>Patient</InputLabel>
                   <Select
@@ -318,7 +318,7 @@ export default function NewTreatmentPage() {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <FormControl fullWidth margin="normal" required>
                   <InputLabel>Appointment</InputLabel>
                   <Select
@@ -340,14 +340,14 @@ export default function NewTreatmentPage() {
                 </FormControl>
               </Grid>
               
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Divider sx={{ my: 2 }} />
                 <Typography variant="h6" gutterBottom>
                   Treatment Details
                 </Typography>
               </Grid>
               
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <TextField
                   fullWidth
                   label="Treatment Notes"
@@ -362,7 +362,7 @@ export default function NewTreatmentPage() {
                 />
               </Grid>
               
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <TextField
                   fullWidth
                   label="Home Program"
@@ -376,7 +376,7 @@ export default function NewTreatmentPage() {
                 />
               </Grid>
               
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <TextField
                   fullWidth
                   label="Progress Notes"
