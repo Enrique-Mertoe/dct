@@ -26,40 +26,46 @@ RUN npm ci && \
 COPY . .
 
 # Generate Prisma client
-RUN #npx prisma generate
+RUN npx prisma generate
 
-
+# Build Next.js application
+RUN npm run build
 
 # Create necessary directories with proper permissions
 RUN mkdir -p /app/data /app/config /app/uploads /app/logs /app/backups && \
     chown -R clinic:clinic /app/data /app/config /app/uploads /app/logs /app/backups
-# Build Next.js application
-RUN cp /app/config/.env .env
-RUN npm run init-db
-RUN npm run build
 # Create enhanced startup script with backup functionality
 RUN echo '#!/bin/sh' > /app/start.sh && \
     echo 'set -e' >> /app/start.sh && \
     echo 'echo "[STARTUP] Clinic Management System initializing..."' >> /app/start.sh && \
     echo 'mkdir -p /app/data /app/config /app/uploads /app/logs /app/backups' >> /app/start.sh && \
     echo 'export DATABASE_URL="file:/app/data/clinic.db"' >> /app/start.sh && \
-    echo '# Create daily backup if database exists' >> /app/start.sh && \
-    echo 'if [ -f "/app/data/clinic.db" ]; then' >> /app/start.sh && \
+    echo 'export NODE_ENV="production"' >> /app/start.sh && \
+    echo 'echo "[STARTUP] Environment: NODE_ENV=$NODE_ENV, DATABASE_URL=$DATABASE_URL"' >> /app/start.sh && \
+    echo '# Check if database exists and has data' >> /app/start.sh && \
+    echo 'if [ -f "/app/data/clinic.db" ] && [ -s "/app/data/clinic.db" ]; then' >> /app/start.sh && \
+    echo '  echo "[STARTUP] Database found with data, checking migrations..."' >> /app/start.sh && \
     echo '  backup_date=$(date +"%Y%m%d")' >> /app/start.sh && \
     echo '  if [ ! -f "/app/backups/daily_backup_${backup_date}.db" ]; then' >> /app/start.sh && \
     echo '    cp /app/data/clinic.db "/app/backups/daily_backup_${backup_date}.db"' >> /app/start.sh && \
     echo '    echo "[STARTUP] Daily backup created: daily_backup_${backup_date}.db"' >> /app/start.sh && \
     echo '  fi' >> /app/start.sh && \
-    echo '  echo "[STARTUP] Database found, checking migrations..."' >> /app/start.sh && \
     echo '  npx prisma migrate deploy' >> /app/start.sh && \
     echo 'else' >> /app/start.sh && \
-    echo '  echo "[STARTUP] No database found, initializing fresh database..."' >> /app/start.sh && \
+    echo '  echo "[STARTUP] No database found or empty database, initializing fresh..."' >> /app/start.sh && \
+    echo '  echo "[STARTUP] Running: npm run init-db"' >> /app/start.sh && \
     echo '  npm run init-db' >> /app/start.sh && \
-    echo '  echo "[STARTUP] Fresh database initialized!"' >> /app/start.sh && \
+    echo '  if [ -f "/app/data/clinic.db" ]; then' >> /app/start.sh && \
+    echo '    echo "[STARTUP] Database created successfully!"' >> /app/start.sh && \
+    echo '    echo "[STARTUP] Database size: $(ls -lh /app/data/clinic.db | awk "{print \\$5}")"' >> /app/start.sh && \
+    echo '  else' >> /app/start.sh && \
+    echo '    echo "[STARTUP] ERROR: Database was not created!"' >> /app/start.sh && \
+    echo '    exit 1' >> /app/start.sh && \
+    echo '  fi' >> /app/start.sh && \
     echo 'fi' >> /app/start.sh && \
     echo '# Cleanup old backups (keep last 7 days)' >> /app/start.sh && \
     echo 'find /app/backups -name "daily_backup_*.db" -mtime +7 -delete 2>/dev/null || true' >> /app/start.sh && \
-    echo 'echo "[STARTUP] Starting Next.js application..."' >> /app/start.sh && \
+    echo 'echo "[STARTUP] Database initialization complete. Starting Next.js application..."' >> /app/start.sh && \
     echo 'exec "$@"' >> /app/start.sh && \
     chmod +x /app/start.sh
 

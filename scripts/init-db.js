@@ -10,22 +10,27 @@ if (!fs.existsSync(prismaDir)) {
 }
 
 try {
+  console.log('=== DATABASE INITIALIZATION START ===');
+  console.log('NODE_ENV:', process.env.NODE_ENV);
+  console.log('DATABASE_URL:', process.env.DATABASE_URL);
+  console.log('Current working directory:', process.cwd());
+  
   // Run Prisma migrations
   console.log('Running Prisma migrations...');
   // Use migrate deploy for production, migrate dev for development
   const isProduction = process.env.NODE_ENV === 'production';
-  const migrateCommand =
-    //   isProduction
-    // ?
-          'npx prisma migrate deploy'
-    // : 'npx prisma migrate dev --name init';
+  const migrateCommand = 'npx prisma migrate deploy';
+  console.log('Migration command:', migrateCommand);
   execSync(migrateCommand, { stdio: 'inherit' });
+  console.log('✓ Migrations completed');
   
   // Seed the database
   console.log('Seeding the database...');
+  console.log('Seed command: npm run seed');
   execSync('npm run seed', { stdio: 'inherit' });
+  console.log('✓ Seeding completed');
   
-  console.log('Database initialization completed successfully');
+  console.log('=== DATABASE INITIALIZATION COMPLETED SUCCESSFULLY ===');
 } catch (error) {
   console.error('Error initializing database:', error);
   process.exit(1);
