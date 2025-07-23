@@ -19,6 +19,9 @@ services:
       - DATABASE_URL=file:/app/data/clinic.db
       - PORT=3000
       - HOST=0.0.0.0
+      # Read JWT secrets from the setup script's .env file
+      - JWT_SECRET=${JWT_SECRET:-clinic_default_jwt_secret_please_change}
+      - SESSION_SECRET=${SESSION_SECRET:-clinic_default_session_secret_please_change}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
       interval: 30s

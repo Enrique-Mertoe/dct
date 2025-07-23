@@ -198,6 +198,10 @@ echo # Docker Configuration
 echo CLINIC_DATA_ROOT=%DATA_ROOT:\=/%
 echo APP_PORT=%app_port%
 echo NGINX_PORT=%nginx_port%
+echo.
+echo # JWT Secrets for application
+echo JWT_SECRET=!jwt_secret!
+echo SESSION_SECRET=!session_secret!
 ) > .env
 
 REM Create Nginx configuration
