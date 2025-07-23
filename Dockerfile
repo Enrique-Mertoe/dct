@@ -33,7 +33,7 @@ RUN npm run build
 
 # Create necessary directories with proper permissions
 RUN mkdir -p /app/data /app/config /app/uploads /app/logs /app/backups && \
-    chown -R clinic:clinic /app
+    chown -R clinic:clinic /app/data /app/config /app/uploads /app/logs /app/backups
 
 # Switch to non-root user
 USER clinic
