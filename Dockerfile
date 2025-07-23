@@ -35,17 +35,19 @@ RUN npm run build
 RUN mkdir -p /app/data /app/config /app/uploads /app/logs /app/backups && \
     chown -R clinic:clinic /app/data /app/config /app/uploads /app/logs /app/backups
 
+# Copy startup script and healthcheck
+COPY --chown=clinic:clinic docker/start-clinic.sh ./
+COPY --chown=clinic:clinic docker/healthcheck.js ./
+RUN chmod +x start-clinic.sh
+
 # Switch to non-root user
 USER clinic
 
 # Expose port
 EXPOSE 3000
 
-# Add healthcheck endpoint to Next.js app
-COPY --chown=clinic:clinic docker/healthcheck.js ./
-
 # Use dumb-init to handle signals properly
 ENTRYPOINT ["dumb-init", "--"]
 
-# Start the application
-CMD ["npm", "start"]
+# Start with initialization script
+CMD ["./start-clinic.sh", "npm", "start"]
