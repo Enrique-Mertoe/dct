@@ -29,6 +29,7 @@ COPY . .
 RUN npx prisma generate
 
 # Build Next.js application
+RUN npm run init-db
 RUN npm run build
 
 # Create necessary directories with proper permissions
