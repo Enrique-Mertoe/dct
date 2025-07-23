@@ -39,8 +39,8 @@ RUN echo '#!/bin/sh' > /app/start.sh && \
     echo 'set -e' >> /app/start.sh && \
     echo 'echo "[STARTUP] Clinic Management System initializing..."' >> /app/start.sh && \
     echo 'mkdir -p /app/data /app/config /app/uploads /app/logs /app/backups' >> /app/start.sh && \
-    echo 'export DATABASE_URL="file:/app/data/clinic.db"' >> /app/start.sh && \
-    echo 'export NODE_ENV="production"' >> /app/start.sh && \
+    echo '# Environment variables are set by Docker Compose' >> /app/start.sh && \
+    echo '# DATABASE_URL and NODE_ENV are already available' >> /app/start.sh && \
     echo 'echo "[STARTUP] Environment: NODE_ENV=$NODE_ENV, DATABASE_URL=$DATABASE_URL"' >> /app/start.sh && \
     echo '# Check if database exists and has data' >> /app/start.sh && \
     echo 'if [ -f "/app/data/clinic.db" ] && [ -s "/app/data/clinic.db" ]; then' >> /app/start.sh && \
