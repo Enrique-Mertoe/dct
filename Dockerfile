@@ -35,19 +35,30 @@ RUN npm run build
 RUN mkdir -p /app/data /app/config /app/uploads /app/logs /app/backups && \
     chown -R clinic:clinic /app/data /app/config /app/uploads /app/logs /app/backups
 
-# Create a simple startup script inline
+# Create enhanced startup script with backup functionality
 RUN echo '#!/bin/sh' > /app/start.sh && \
     echo 'set -e' >> /app/start.sh && \
-    echo 'echo "[STARTUP] Initializing database if needed..."' >> /app/start.sh && \
-    echo 'mkdir -p /app/data' >> /app/start.sh && \
+    echo 'echo "[STARTUP] Clinic Management System initializing..."' >> /app/start.sh && \
+    echo 'mkdir -p /app/data /app/config /app/uploads /app/logs /app/backups' >> /app/start.sh && \
     echo 'export DATABASE_URL="file:/app/data/clinic.db"' >> /app/start.sh && \
-    echo 'if [ ! -f "/app/data/clinic.db" ]; then' >> /app/start.sh && \
-    echo '  echo "[STARTUP] Creating database..."' >> /app/start.sh && \
+    echo '# Create daily backup if database exists' >> /app/start.sh && \
+    echo 'if [ -f "/app/data/clinic.db" ]; then' >> /app/start.sh && \
+    echo '  backup_date=$(date +"%Y%m%d")' >> /app/start.sh && \
+    echo '  if [ ! -f "/app/backups/daily_backup_${backup_date}.db" ]; then' >> /app/start.sh && \
+    echo '    cp /app/data/clinic.db "/app/backups/daily_backup_${backup_date}.db"' >> /app/start.sh && \
+    echo '    echo "[STARTUP] Daily backup created: daily_backup_${backup_date}.db"' >> /app/start.sh && \
+    echo '  fi' >> /app/start.sh && \
+    echo '  echo "[STARTUP] Database found, checking migrations..."' >> /app/start.sh && \
+    echo '  npx prisma migrate deploy' >> /app/start.sh && \
+    echo 'else' >> /app/start.sh && \
+    echo '  echo "[STARTUP] No database found, initializing fresh database..."' >> /app/start.sh && \
     echo '  npx prisma migrate deploy' >> /app/start.sh && \
     echo '  npm run seed' >> /app/start.sh && \
-    echo '  echo "[STARTUP] Database ready!"' >> /app/start.sh && \
+    echo '  echo "[STARTUP] Fresh database initialized!"' >> /app/start.sh && \
     echo 'fi' >> /app/start.sh && \
-    echo 'echo "[STARTUP] Starting application..."' >> /app/start.sh && \
+    echo '# Cleanup old backups (keep last 7 days)' >> /app/start.sh && \
+    echo 'find /app/backups -name "daily_backup_*.db" -mtime +7 -delete 2>/dev/null || true' >> /app/start.sh && \
+    echo 'echo "[STARTUP] Starting Next.js application..."' >> /app/start.sh && \
     echo 'exec "$@"' >> /app/start.sh && \
     chmod +x /app/start.sh
 
