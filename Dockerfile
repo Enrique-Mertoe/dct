@@ -28,14 +28,14 @@ COPY . .
 # Generate Prisma client
 RUN #npx prisma generate
 
-# Build Next.js application
-RUN npm run init-db
-RUN npm run build
+
 
 # Create necessary directories with proper permissions
 RUN mkdir -p /app/data /app/config /app/uploads /app/logs /app/backups && \
     chown -R clinic:clinic /app/data /app/config /app/uploads /app/logs /app/backups
-
+# Build Next.js application
+RUN npm run init-db
+RUN npm run build
 # Create enhanced startup script with backup functionality
 RUN echo '#!/bin/sh' > /app/start.sh && \
     echo 'set -e' >> /app/start.sh && \
