@@ -1,0 +1,132 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// User model with role-based access control
+model User {
+  id                String         @id @default(uuid())
+  email             String         @unique
+  password          String
+  name              String
+  role              Role           @default(PATIENT)
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  patients          Patient[]      @relation("DoctorPatients")
+  assignedPatients  Patient[]      @relation("AssignedDoctor")
+  appointments      Appointment[]  @relation("UserAppointments")
+  treatments        Treatment[]
+  auditLogs         AuditLog[]
+}
+
+// Patient model for storing patient information
+model Patient {
+  id                String         @id @default(uuid())
+  firstName         String
+  lastName          String
+  dateOfBirth       DateTime
+  gender            String
+  address           String
+  phone             String
+  email             String?
+  emergencyContact  String?
+  medicalHistory    String?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  createdBy         User           @relation("DoctorPatients", fields: [createdById], references: [id])
+  createdById       String
+  assignedDoctor    User?          @relation("AssignedDoctor", fields: [assignedDoctorId], references: [id])
+  assignedDoctorId  String?
+  appointments      Appointment[]
+  treatments        Treatment[]
+}
+
+// Appointment model for scheduling
+model Appointment {
+  id                String         @id @default(uuid())
+  date              DateTime
+  timeSlotId        String
+  timeSlot          TimeSlot       @relation(fields: [timeSlotId], references: [id])
+  status            AppointmentStatus @default(SCHEDULED)
+  notes             String?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  patient           Patient        @relation(fields: [patientId], references: [id])
+  patientId         String
+  user              User           @relation("UserAppointments", fields: [userId], references: [id])
+  userId            String
+  treatment         Treatment?
+}
+
+// TimeSlot model for available appointment times
+model TimeSlot {
+  id                String         @id @default(uuid())
+  startTime         String         // Format: HH:MM
+  endTime           String         // Format: HH:MM
+  capacity          Int            // Number of appointments that can be scheduled
+  dayOfWeek         Int            // 0 = Sunday, 1 = Monday, etc.
+  isActive          Boolean        @default(true)
+  appointments      Appointment[]
+}
+
+// Treatment model for physiotherapy sessions
+model Treatment {
+  id                String         @id @default(uuid())
+  date              DateTime
+  notes             String
+  homeProgram       String?
+  progress          String?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  patient           Patient        @relation(fields: [patientId], references: [id])
+  patientId         String
+  physiotherapist   User           @relation(fields: [physiotherapistId], references: [id])
+  physiotherapistId String
+  appointment       Appointment    @relation(fields: [appointmentId], references: [id])
+  appointmentId     String         @unique
+}
+
+// AuditLog model for tracking system activity
+model AuditLog {
+  id                String         @id @default(uuid())
+  action            String
+  entityType        String
+  entityId          String
+  details           String
+  createdAt         DateTime       @default(now())
+  user              User           @relation(fields: [userId], references: [id])
+  userId            String
+}
+
+// Configuration model for system settings
+model Configuration {
+  id                String         @id @default(uuid())
+  key               String         @unique
+  value             String
+  description       String?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+}
+
+// Enums
+enum Role {
+  ADMIN
+  PHYSIOTHERAPIST
+  RECEPTIONIST
+  PATIENT
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  NO_SHOW
+}
