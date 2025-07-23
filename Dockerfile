@@ -34,6 +34,7 @@ RUN #npx prisma generate
 RUN mkdir -p /app/data /app/config /app/uploads /app/logs /app/backups && \
     chown -R clinic:clinic /app/data /app/config /app/uploads /app/logs /app/backups
 # Build Next.js application
+RUN cp /app/config/.env .env
 RUN npm run init-db
 RUN npm run build
 # Create enhanced startup script with backup functionality
