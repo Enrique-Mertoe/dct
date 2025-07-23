@@ -14,9 +14,11 @@ try {
   console.log('Running Prisma migrations...');
   // Use migrate deploy for production, migrate dev for development
   const isProduction = process.env.NODE_ENV === 'production';
-  const migrateCommand = isProduction 
-    ? 'npx prisma migrate deploy' 
-    : 'npx prisma migrate dev --name init';
+  const migrateCommand =
+    //   isProduction
+    // ?
+          'npx prisma migrate deploy'
+    // : 'npx prisma migrate dev --name init';
   execSync(migrateCommand, { stdio: 'inherit' });
   
   // Seed the database
