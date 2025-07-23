@@ -12,7 +12,12 @@ if (!fs.existsSync(prismaDir)) {
 try {
   // Run Prisma migrations
   console.log('Running Prisma migrations...');
-  execSync('npx prisma migrate dev --name init', { stdio: 'inherit' });
+  // Use migrate deploy for production, migrate dev for development
+  const isProduction = process.env.NODE_ENV === 'production';
+  const migrateCommand = isProduction 
+    ? 'npx prisma migrate deploy' 
+    : 'npx prisma migrate dev --name init';
+  execSync(migrateCommand, { stdio: 'inherit' });
   
   // Seed the database
   console.log('Seeding the database...');

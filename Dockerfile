@@ -52,8 +52,7 @@ RUN echo '#!/bin/sh' > /app/start.sh && \
     echo '  npx prisma migrate deploy' >> /app/start.sh && \
     echo 'else' >> /app/start.sh && \
     echo '  echo "[STARTUP] No database found, initializing fresh database..."' >> /app/start.sh && \
-    echo '  npx prisma migrate deploy' >> /app/start.sh && \
-    echo '  npm run seed' >> /app/start.sh && \
+    echo '  npm run init-db' >> /app/start.sh && \
     echo '  echo "[STARTUP] Fresh database initialized!"' >> /app/start.sh && \
     echo 'fi' >> /app/start.sh && \
     echo '# Cleanup old backups (keep last 7 days)' >> /app/start.sh && \
