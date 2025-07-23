@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, use } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { authService } from '@/services/apiService';
 import {
@@ -29,7 +29,7 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import MedicalInformationIcon from '@mui/icons-material/MedicalInformation';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 
-export default function NewTreatmentPage() {
+function TreatmentForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const appointmentId = searchParams.get('appointmentId');
@@ -394,5 +394,15 @@ export default function NewTreatmentPage() {
         </Card>
       </Box>
     </DashboardLayout>
+  );
+}
+
+export default function NewTreatmentPage() {
+  return (
+    <Suspense fallback={<Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <CircularProgress />
+    </Box>}>
+      <TreatmentForm />
+    </Suspense>
   );
 }
